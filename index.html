@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Semáforo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        padding: 10px;
+      }
+
+      .traffic-light {
+        width: 100px;
+        height: 250px;
+        background-color: black;
+        border-radius: 20px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: center;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      }
+
+      .light {
+        width: 60px;
+        height: 60px;
+        background-color: grey;
+        border-radius: 50%;
+        transition: background-color 0.3s ease;
+      }
+
+      .red {
+        background-color: red;
+      }
+
+      .green {
+        background-color: green;
+      }
+
+      .button-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+        width: 100%;
+      }
+
+      button {
+        padding: 15px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      button:active {
+        background-color: #003f7f;
+      }
+
+      .counter {
+        font-size: 20px;
+        margin-top: 20px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="traffic-light">
+      <div id="red-light" class="light"></div>
+      <div id="green-light" class="light"></div>
+    </div>
+
+    <div class="button-container">
+      <button onclick="registerLight('green')">Inicia Verde</button>
+      <button onclick="registerLight('red')">Inicia Rojo</button>
+      <button onclick="registerLight('endred')">Termina Rojo</button>
+      <button onclick="playSequence()">Reproducir Secuencia</button>
+    </div>
+
+    <div class="counter" id="counter">Próximo cambio en: --</div>
+
+    <script>
+      let lightSequence = [];
+      let green = localStorage.getItem("green");
+      let red = localStorage.getItem("red");
+      let endred = localStorage.getItem("endred");
+
+      function registerLight(color) {
+        document.getElementById("red-light").classList.remove("red");
+        document.getElementById("green-light").classList.remove("green");
+
+        let timestamp = new Date().getTime();
+        localStorage.setItem(color, timestamp);
+        if (color === "red") {
+          document.getElementById("red-light").classList.add("red");
+          red = timestamp;
+        } else if (color === "green") {
+          document.getElementById("green-light").classList.add("green");
+          green = timestamp;
+        } else if (color === "endred") {
+          document.getElementById("green-light").classList.add("green");
+          endred = timestamp;
+          playSequence();
+        }
+      }
+
+      function playSequence() {
+        let color = "red";
+        let duracion_verde = red - green;
+        let duracion_rojo = endred - red;
+        let duracion_total = duracion_verde + duracion_rojo;
+        setInterval(() => {
+          let now = new Date().getTime();
+          let scala = (now - endred) % duracion_total;
+          if (scala < duracion_verde) {
+            color = "green";
+            document.getElementById(
+              "counter"
+            ).innerText = `Próximo cambio en: ${Math.round(
+              (duracion_verde - scala) / 1000
+            )}`;
+          } else {
+            color = "red";
+            document.getElementById(
+              "counter"
+            ).innerText = `Próximo cambio en: ${Math.round(
+              (duracion_total - scala) / 1000
+            )}`;
+          }
+          document.getElementById("red-light").classList.remove("red");
+          document.getElementById("green-light").classList.remove("green");
+          document.getElementById(`${color}-light`).classList.add(color);
+        }, 100);
+      }
+    </script>
+  </body>
+</html>
